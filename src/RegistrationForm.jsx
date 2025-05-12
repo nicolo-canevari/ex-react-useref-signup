@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 const RegistrationForm = () => {
     // Stati per ogni campo del form
@@ -9,13 +9,43 @@ const RegistrationForm = () => {
     const [experience, setExperience] = useState('');
     const [description, setDescription] = useState('');
 
-    // Stato per la gestione degli errori
+    // Stati per la gestione degli errori
     const [errors, setErrors] = useState({});
+    const [valid, setValid] = useState({
+        username: false,
+        password: false,
+        description: false,
+    });
+
+    // Definisci i caratteri validi per username e password
+    const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const numbers = "0123456789";
+    const symbols = "!@#$%^&*()-_=+[]{}|;:'\\\",.<>?/`~";
+
+    // Validazione username con useMemo
+    const validateUsername = useMemo(() => {
+        return username.length >= 6 &&
+            [...username].every(char => letters.includes(char) || numbers.includes(char)); // Verifica che sia alfanumerico e lungo almeno 6 caratteri
+    }, [username]);
+
+    // Validazione password con useMemo
+    const validatePassword = useMemo(() => {
+        return password.length >= 8 &&
+            [...password].some(char => letters.includes(char)) && // Contiene almeno una lettera
+            [...password].some(char => numbers.includes(char)) && // Contiene almeno un numero
+            [...password].some(char => symbols.includes(char));  // Contiene almeno un simbolo
+    }, [password]);
+
+    // Validazione descrizione con useMemo
+    const validateDescription = useMemo(() => {
+        return description.trim().length >= 10 && description.trim().length <= 200; // Verifica la lunghezza della descrizione
+    }, [description]);
 
     // Funzione di validazione del form
     const validateForm = () => {
         const newErrors = {};
 
+        // Validazione campi base
         if (!fullName) newErrors.fullName = 'Il nome completo è richiesto';
         if (!username) newErrors.username = 'Lo username è richiesto';
         if (!password) newErrors.password = 'La password è richiesta';
@@ -65,7 +95,7 @@ const RegistrationForm = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
-                {errors.username && <span>{errors.username}</span>}
+                {validateUsername ? <span style={{ color: 'green' }}>Username valido</span> : <span style={{ color: 'red' }}>Username deve contenere almeno 6 caratteri alfanumerici</span>}
             </div>
 
             <div>
@@ -75,7 +105,7 @@ const RegistrationForm = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                {errors.password && <span>{errors.password}</span>}
+                {validatePassword ? <span style={{ color: 'green' }}>Password valida</span> : <span style={{ color: 'red' }}>La password deve contenere almeno 8 caratteri, 1 lettera, 1 numero e 1 simbolo</span>}
             </div>
 
             <div>
@@ -108,7 +138,7 @@ const RegistrationForm = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                 />
-                {errors.description && <span>{errors.description}</span>}
+                {validateDescription ? <span style={{ color: 'green' }}>Descrizione valida</span> : <span style={{ color: 'red' }}>La descrizione deve contenere tra 10 e 200 caratteri</span>}
             </div>
 
             <button type="submit">Registrati</button>
